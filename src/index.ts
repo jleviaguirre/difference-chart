@@ -140,7 +140,8 @@ window.Spotfire.initialize(async (mod) => {
             onMouseover(node: DifferenceChartNode) {
                 mod.controls.tooltip.show(node.formattedPath());
             },
-            onMouseLeave: mod.controls.tooltip.hide
+            onMouseLeave: mod.controls.tooltip.hide,
+            spotfireDataView: dataView
         };
 
           
@@ -149,18 +150,23 @@ window.Spotfire.initialize(async (mod) => {
         //gets all dataView rows and parses to populates SpotfireData
         const rows = await dataView.allRows();
         rows.map(r=>{
-             let dataPoint ={} 
+
              //parse dates
              let aDate = r.categorical("X").value()[0].value();
 
+            let dataPoint:any = { 
             //create JSON structure
-            dataPoint["date"]=aDate;
-            dataPoint["Y1"] = r.continuous("Y1").value()??0;
-            dataPoint["Y2"] = r.continuous("Y2").value()??0;
+                date:aDate,
+                Y1: r.continuous("Y1").value()??0,
+                Y2: r.continuous("Y2").value()??0,
+                row: r
+            }
 
             //add structure to array
             spotfireData.push(dataPoint);
         })
+
+        console.log(spotfireData);
 
         renderChart(spotfireData, settings);  
         context.signalRenderComplete();

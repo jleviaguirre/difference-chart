@@ -1,6 +1,6 @@
 import * as d3 from "d3";
-import { DataViewRow, Size } from "spotfire-api";
-import { rectangularSelection } from "./rectangularMarking";
+import { DataViewRow, Size, DataView } from "spotfire-api";
+import { MarkingSettings, rectangularSelection } from "./rectangularMarking";
 
 export interface DifferenceChartNode {
     hasVirtualChildren?: boolean;
@@ -32,9 +32,10 @@ export interface DifferenceChartSettings {
     mark(data: unknown): void;
     click(data: unknown): void;
     clearMarking(): void;
+    spotfireDataView: DataView;
 }
 
-export function renderChart(data: {}[], differenceChartSettings: DifferenceChartSettings) {
+export function renderChart(data: [], differenceChartSettings: DifferenceChartSettings) {
 
     //Chart options
     var margin = { top: 10, right: 10, bottom: 20, left: 40 },
@@ -52,13 +53,13 @@ export function renderChart(data: {}[], differenceChartSettings: DifferenceChart
 
     var line = d3.area()
         .curve(d3.curveBasis)
-        .x(function (d:object) { return x(d.date); })
-        .y(function (d:object) { return y(d[measure1]); });
+        .x(function (d: object) { return x(d.date); })
+        .y(function (d: object) { return y(d[measure1]); });
 
     var area = d3.area()
         .curve(d3.curveBasis)
-        .x(function (d:object) { return x(d.date); })
-        .y1(function (d:object) { return y(d[measure1]); });
+        .x(function (d: object) { return x(d.date); })
+        .y1(function (d: object) { return y(d[measure1]); });
 
     d3.selectAll("#myChart").html("");
 
@@ -68,7 +69,7 @@ export function renderChart(data: {}[], differenceChartSettings: DifferenceChart
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    x.domain(d3.extent(data, function (d:object) { return d.date; }));
+    x.domain(d3.extent(data, function (d: object) { return d.date; }));
 
     y.domain([
         d3.min(data, function (d) { return Math.min(d[measure1], d[measure2]); }),
@@ -120,11 +121,24 @@ export function renderChart(data: {}[], differenceChartSettings: DifferenceChart
     //but here is another code that handles marking in d3 that might be more appropiate for this use case
     //https://github.com/TIBCOSoftware/spotfire-mods/blob/master/examples/js-areachart-d3/src/render.js
 
+    let markingSettings: Partial<MarkingSettings> = {
+        xAxisScale: x,
+        yAxisScale: y,
+        margin: margin,
+        clearMarking: (() => { console.log("Clearing marking"); differenceChartSettings.clearMarking() }),
+        mark: (async (minX, maxX, minY, maxY) => {
+            console.log(await differenceChartSettings.spotfireDataView.hasExpired())
+            console.log(data);
+            let rowsToMark = data.filter((p: any) => {
+                console.log(p);
+                return (p.Y1 >= minY && p.Y1 <= maxY)
+            }).map((r: any) => r.row);
+            console.log(rowsToMark);
+            differenceChartSettings.spotfireDataView.mark(rowsToMark, "Replace");
+        })
+    }
     svg = d3.select("#myChart svg");
-    rectangularSelection(svg, {
-        clearMarking: differenceChartSettings.clearMarking,
-        mark: (d: any) => differenceChartSettings.mark(d.data)
-    });
+    rectangularSelection(svg, markingSettings);
 
 }
 

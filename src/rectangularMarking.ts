@@ -1,6 +1,11 @@
 import * as d3 from "d3";
 
 export interface MarkingSettings {
+
+    xAxisScale: any;
+    yAxisScale: any;
+    margin: any;
+
     /**
      * Callback to clear the marking.
      */
@@ -10,13 +15,13 @@ export interface MarkingSettings {
      * Marking callback that will be invoked for each marked element.
      * @param datum d3 Data object bound to the marked element.
      */
-    mark(datum: unknown): void;
+    mark(minX: number, maxX: number, minY: number, maxY: number): void;
 
     /**
      * Get the calculated center of a datum object. The default is to take the center of the bounding box.
      * @param datum  d3 Data object bound to the marked element.
      */
-    getCenter?(datum: unknown): {x: number, y: number};
+    getCenter?(datum: unknown): { x: number, y: number };
 
     /**
      * CSS Classes to ignore. Checks the parent of the marked element to see if any parent has an ignored class.
@@ -66,9 +71,9 @@ export function rectangularSelection(svg: d3.Selection<d3.BaseType, any, any, an
 
     const endSelection = function (start: [number, number], end: [number, number]) {
         rectangle.attr("visibility", "hidden");
-
+        console.log(start, end);
         // Ignore rectangular markings that were just a click.
-        if (Math.abs(start[0] - end[0]) < 4 || Math.abs(start[1] - end[1]) < 4) {
+        /*if (Math.abs(start[0] - end[0]) < 4 || Math.abs(start[1] - end[1]) < 4) {
             let elem = firstTarget;
             let clearMarking = true;
             while (elem) {
@@ -86,21 +91,35 @@ export function rectangularSelection(svg: d3.Selection<d3.BaseType, any, any, an
             }
 
             return;
-        }
+        }*/
 
-        const selectionBox = rectangle.node()!.getBoundingClientRect();
+        let yStart = settings.yAxisScale.invert(start[1] - settings.margin.top);
+        let yEnd = settings.yAxisScale.invert(end[1] - settings.margin.top);
+        let xStart = settings.xAxisScale.invert(start[1] - settings.margin.top);
+        let xEnd = settings.xAxisScale.invert(end[1] - settings.margin.top);
+
+        let minY = Math.min(yStart, yEnd);
+        let maxY = Math.max(yStart, yEnd);
+        let minX = Math.min(xStart, xEnd);
+        let maxX = Math.max(xStart, xEnd);
+
+        console.log(minX, maxX, minY, maxY);
+
+        settings.mark(minX, maxX, minY, maxY);
+
+        /*const selectionBox = rectangle.node()!.getBoundingClientRect();
         const markedSectors = svg
             .selectAll<SVGPathElement, unknown>(settings.markingSelector)
             .filter(settings.centerMarking ? partOfMarking : fullyPartOfMarking);
-
+ 
         if (markedSectors.size() === 0) {
             return settings.clearMarking();
         }
-
+ 
         markedSectors.each((n: any) => {
             settings.mark(n);
         });
-
+ 
         function fullyPartOfMarking(this: SVGPathElement) {
             const box = this.getBoundingClientRect();
             return (
@@ -110,11 +129,11 @@ export function rectangularSelection(svg: d3.Selection<d3.BaseType, any, any, an
                 box.y + box.height <= selectionBox.y + selectionBox.height
             );
         }
-
+ 
         function partOfMarking(this: SVGPathElement, d: unknown) {
             let centerX: number;
             let centerY : number;
-
+ 
             if(settings.getCenter) {
                 let center = settings.getCenter(d);
                 centerX = center.x;
@@ -124,14 +143,16 @@ export function rectangularSelection(svg: d3.Selection<d3.BaseType, any, any, an
                 centerX = box.x + box.width / 2;
                 centerY = box.y + box.height / 2;
             }
-
+ 
             return (
                 centerX >= selectionBox.x &&
                 centerY >= selectionBox.y &&
                 centerX <= selectionBox.x + selectionBox.width &&
                 centerY <= selectionBox.y + selectionBox.height
             );
-        }
+        }*/
+
+
     };
 
     svg.on("mousedown", function (this: any) {
