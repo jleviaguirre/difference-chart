@@ -1,0 +1,81 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#mod-container {
+    position: absolute;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    user-select: none;
+    display: flex;
+    justify-self: center;
+    align-items: center;
+    overflow-y: auto;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+  display:none;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.area.above {
+  fill: #8d8d8d;
+}
+
+.area.below {
+  fill:#ff0303;
+}
+
+
+.line {
+  fill: none;
+  stroke: #000;
+  stroke-width:1.5px;
+}
+
+
+.selection {
+    visibility: hidden;
+    pointer-events: none;
+    position: absolute;
+    border: 1px solid #677085;
+    background-color: rgba(0, 90, 230, 0.17);
+    width: 0;
+    height: 0;
+    top: 0;
+    left: 0;
+}
+
+.selection-bg {
+    visibility: hidden;
+    position: absolute;
+    background-color: rgba(200, 90, 230, 0);
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.rectangle {
+    fill: #8daddf;
+    stroke: #0a1530;
+    fill-opacity: 0.5;
+    stroke-width: 0.4px;
+    /* stroke-opacity: 0.7; */
+
+
+}
+
+
+
+
